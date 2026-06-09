@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SuperMart Battle</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section id="start-screen" class="start-card panel">
+      <p class="eyebrow">2D Pixel Supermarket Economics Game</p>
+      <h1>SuperMart Battle</h1>
+      <p class="intro">Create a room or join with a code. Up to 8 players compete for profit by managing price, supply, shelves, and customer demand.</p>
+
+      <label for="player-name">Player name</label>
+      <input id="player-name" maxlength="18" placeholder="Example: Blue Mart">
+
+      <div class="start-actions">
+        <button id="create-room">Create Room</button>
+        <div class="join-row">
+          <input id="room-code" maxlength="4" placeholder="CODE">
+          <button id="join-room">Join Room</button>
+        </div>
+      </div>
+
+      <p id="start-error" class="error-text" aria-live="polite"></p>
+      <ul class="quick-rules">
+        <li>Host creates a room, shares the code, then starts the round.</li>
+        <li>Buy stock → restock shelves → set prices → watch customers choose stores.</li>
+        <li>Highest profit wins when the timer ends.</li>
+      </ul>
+    </section>
+
+    <section id="game-screen" class="game-screen hidden">
+      <header class="top-bar panel">
+        <div>
+          <span class="eyebrow">SuperMart Battle</span>
+          <h2 id="room-label">Room ----</h2>
+        </div>
+        <div class="top-stat"><span>Player</span><strong id="player-label">---</strong></div>
+        <div class="top-stat"><span>Status</span><strong id="status-label">Waiting</strong></div>
+        <div class="top-stat"><span>Players</span><strong id="players-label">1/8</strong></div>
+        <div class="top-stat"><span>Time</span><strong id="timer-label">05:00</strong></div>
+        <button id="start-game" class="host-button hidden">Start Round</button>
+      </header>
+
+      <aside class="control-panel panel">
+        <h2>Business Dashboard</h2>
+        <div class="stats-grid">
+          <div><span>Money</span><strong id="money-stat">$0</strong></div>
+          <div><span>Revenue</span><strong id="revenue-stat">$0</strong></div>
+          <div><span>Cost</span><strong id="cost-stat">$0</strong></div>
+          <div><span>Profit</span><strong id="profit-stat">$0</strong></div>
+        </div>
+
+        <h3>Products</h3>
+        <div id="product-controls" class="product-controls"></div>
+      </aside>
+
+      <section class="map-panel panel">
+        <canvas id="game-canvas" width="900" height="520" aria-label="Top-down supermarket map"></canvas>
+        <div class="map-help">Customers choose stores based on price, stock, demand, and price elasticity.</div>
+        <p id="game-message" class="game-message" aria-live="polite"></p>
+      </section>
+
+      <aside class="leaderboard-panel panel">
+        <h2>Leaderboard</h2>
+        <ol id="leaderboard-list" class="leaderboard-list"></ol>
+        <div class="economics-box">
+          <h3>Economics</h3>
+          <p><strong>Profit</strong> = Revenue − Cost</p>
+          <p><strong>Market Share</strong> = your sales ÷ room sales</p>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/constants.js"></script>
+  <script src="/js/game.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/client.js"></script>
+</body>
+</html>
