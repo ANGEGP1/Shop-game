@@ -1,0 +1,17 @@
+{
+  "name": "supermart-battle-static",
+  "version": "1.0.0",
+  "description": "Fully static GitHub Pages build of SuperMart Battle.",
+  "private": true,
+  "scripts": {
+    "test": "node tests/static-build.test.js",
+    "check": "npm test"
+  },
+  "keywords": [
+    "github-pages",
+    "static-site",
+    "browser-game",
+    "economics"
+  ],
+  "license": "MIT"
+}

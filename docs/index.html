@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SuperMart Battle</title>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section id="start-screen" class="start-card panel">
+      <p class="eyebrow">Static GitHub Pages Edition</p>
+      <h1>SuperMart Battle</h1>
+      <p class="intro">Run a 2D pixel-style supermarket battle directly in the browser. No server, no backend, no install.</p>
+
+      <label for="player-name">Your supermarket name</label>
+      <input id="player-name" maxlength="18" placeholder="Example: Blue Mart" autocomplete="off">
+
+      <div class="start-actions">
+        <button id="create-room">Create Local Room</button>
+        <div class="join-row">
+          <input id="room-code" maxlength="4" placeholder="CODE" autocomplete="off">
+          <button id="join-room">Join Local Room</button>
+        </div>
+      </div>
+
+      <p id="start-error" class="error-text" aria-live="polite"></p>
+      <ul class="quick-rules">
+        <li>This GitHub Pages version is fully static, so room codes are local to this browser tab.</li>
+        <li>Up to 8 supermarket zones appear on one shared map: you plus local computer competitors.</li>
+        <li>Buy stock → restock shelves → set prices → compete for profit.</li>
+      </ul>
+    </section>
+
+    <section id="game-screen" class="game-screen hidden">
+      <header class="top-bar panel">
+        <div>
+          <span class="eyebrow">SuperMart Battle</span>
+          <h2 id="room-label">Room ----</h2>
+        </div>
+        <div class="top-stat"><span>Player</span><strong id="player-label">---</strong></div>
+        <div class="top-stat"><span>Status</span><strong id="status-label">Waiting</strong></div>
+        <div class="top-stat"><span>Stores</span><strong id="players-label">8/8</strong></div>
+        <div class="top-stat"><span>Time</span><strong id="timer-label">05:00</strong></div>
+        <button id="start-game" class="host-button">Start Round</button>
+      </header>
+
+      <aside class="control-panel panel">
+        <h2>Business Dashboard</h2>
+        <div class="stats-grid">
+          <div><span>Money</span><strong id="money-stat">$0</strong></div>
+          <div><span>Revenue</span><strong id="revenue-stat">$0</strong></div>
+          <div><span>Cost</span><strong id="cost-stat">$0</strong></div>
+          <div><span>Profit</span><strong id="profit-stat">$0</strong></div>
+        </div>
+
+        <h3>Products</h3>
+        <div id="product-controls" class="product-controls"></div>
+      </aside>
+
+      <section class="map-panel panel">
+        <canvas id="game-canvas" width="900" height="520" aria-label="Top-down supermarket map"></canvas>
+        <div class="map-help">Customers choose stores based on demand, supply, price, stock, and price elasticity.</div>
+        <p id="game-message" class="game-message" aria-live="polite"></p>
+      </section>
+
+      <aside class="leaderboard-panel panel">
+        <h2>Leaderboard</h2>
+        <ol id="leaderboard-list" class="leaderboard-list"></ol>
+        <div class="economics-box">
+          <h3>Economics</h3>
+          <p><strong>Profit</strong> = Revenue − Cost</p>
+          <p><strong>Market Share</strong> = your sales ÷ total sales</p>
+          <p><strong>Elasticity</strong> changes how strongly customers react to price.</p>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="./js/game.js"></script>
+</body>
+</html>
