@@ -22,6 +22,9 @@
   });
 
   window.SuperMartUI.bindActions({
+    startGame() {
+      socket.emit('startGame');
+    },
     setPrice(product, price) {
       socket.emit('setPrice', { product, price });
     },

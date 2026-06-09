@@ -25,6 +25,11 @@
       </div>
 
       <p id="start-error" class="error-text" aria-live="polite"></p>
+      <ul class="quick-rules">
+        <li>Host creates a room, shares the code, then starts the round.</li>
+        <li>Buy stock → restock shelves → set prices → watch customers choose stores.</li>
+        <li>Highest profit wins when the timer ends.</li>
+      </ul>
     </section>
 
     <section id="game-screen" class="game-screen hidden">
@@ -34,7 +39,10 @@
           <h2 id="room-label">Room ----</h2>
         </div>
         <div class="top-stat"><span>Player</span><strong id="player-label">---</strong></div>
+        <div class="top-stat"><span>Status</span><strong id="status-label">Waiting</strong></div>
+        <div class="top-stat"><span>Players</span><strong id="players-label">1/8</strong></div>
         <div class="top-stat"><span>Time</span><strong id="timer-label">05:00</strong></div>
+        <button id="start-game" class="host-button hidden">Start Round</button>
       </header>
 
       <aside class="control-panel panel">
@@ -53,6 +61,7 @@
       <section class="map-panel panel">
         <canvas id="game-canvas" width="900" height="520" aria-label="Top-down supermarket map"></canvas>
         <div class="map-help">Customers choose stores based on price, stock, demand, and price elasticity.</div>
+        <p id="game-message" class="game-message" aria-live="polite"></p>
       </section>
 
       <aside class="leaderboard-panel panel">

@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "node tests/economy.test.js && node tests/room-and-customer.test.js",
+    "check": "npm test"
   },
   "keywords": [
     "socket.io",

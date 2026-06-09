@@ -5,7 +5,7 @@ const {
   STORE_ZONES,
   ROUND_SECONDS
 } = require('./constants');
-const { createPlayer, calculateLeaderboard } = require('./economy');
+const { createPlayer, resetPlayerForNewRound, calculateLeaderboard } = require('./economy');
 
 const rooms = new Map();
 
@@ -23,13 +23,15 @@ function createRoom() {
   const room = {
     code,
     createdAt: Date.now(),
-    status: 'playing',
+    status: 'waiting',
     players: {},
     customers: [],
     leaderboard: [],
     gameTimeRemaining: ROUND_SECONDS,
     lastCustomerId: 0,
-    lastTickAt: Date.now()
+    lastCustomerSpawnAt: 0,
+    lastTickAt: Date.now(),
+    endedBroadcasted: false
   };
   rooms.set(code, room);
   return room;
@@ -54,14 +56,29 @@ function getOpenStoreIndex(room) {
   return -1;
 }
 
+function getHost(room) {
+  return Object.values(room.players).find((player) => player.isHost) || null;
+}
+
+function ensureHost(room) {
+  if (getHost(room)) return;
+  const firstPlayer = Object.values(room.players).sort((a, b) => a.storeIndex - b.storeIndex)[0];
+  if (firstPlayer) firstPlayer.isHost = true;
+}
+
 function addPlayer(room, socketId, name) {
   const playerCount = Object.keys(room.players).length;
   if (playerCount >= MAX_PLAYERS) {
     return { ok: false, message: 'Room is full.' };
   }
+  if (room.players[socketId]) {
+    return { ok: false, message: 'You are already in this room.' };
+  }
 
   const storeIndex = getOpenStoreIndex(room);
-  const player = createPlayer(socketId, name, PLAYER_COLORS[storeIndex], storeIndex);
+  if (storeIndex < 0) return { ok: false, message: 'No store zones are available.' };
+
+  const player = createPlayer(socketId, name, PLAYER_COLORS[storeIndex], storeIndex, playerCount === 0);
   room.players[socketId] = player;
   room.leaderboard = calculateLeaderboard(room.players);
   return { ok: true, player };
@@ -71,12 +88,35 @@ function removePlayer(socketId) {
   const room = findPlayerRoom(socketId);
   if (!room) return null;
   delete room.players[socketId];
-  room.leaderboard = calculateLeaderboard(room.players);
 
   if (Object.keys(room.players).length === 0) {
     rooms.delete(room.code);
+    return null;
   }
+
+  ensureHost(room);
+  room.leaderboard = calculateLeaderboard(room.players);
   return room;
+}
+
+function startRoom(room, socketId) {
+  const player = room.players[socketId];
+  if (!player || !player.isHost) return { ok: false, message: 'Only the host can start the round.' };
+  if (room.status === 'playing') return { ok: false, message: 'Round is already running.' };
+
+  room.status = 'playing';
+  room.gameTimeRemaining = ROUND_SECONDS;
+  room.customers = [];
+  room.lastCustomerSpawnAt = 0;
+  room.lastTickAt = Date.now();
+  room.endedBroadcasted = false;
+  Object.values(room.players).forEach(resetPlayerForNewRound);
+  room.leaderboard = calculateLeaderboard(room.players);
+  return { ok: true };
+}
+
+function restartRoom(room, socketId) {
+  return startRoom(room, socketId);
 }
 
 function publicRoomState(room) {
@@ -87,7 +127,8 @@ function publicRoomState(room) {
     customers: room.customers,
     leaderboard: room.leaderboard,
     gameTimeRemaining: room.gameTimeRemaining,
-    storeZones: STORE_ZONES
+    storeZones: STORE_ZONES,
+    maxPlayers: MAX_PLAYERS
   };
 }
 
@@ -98,5 +139,7 @@ module.exports = {
   findPlayerRoom,
   addPlayer,
   removePlayer,
+  startRoom,
+  restartRoom,
   publicRoomState
 };

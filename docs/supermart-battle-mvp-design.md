@@ -473,3 +473,15 @@ Before coding the MVP, these choices should be confirmed:
 3. Should room creators be the only players allowed to start or restart a round?
 4. Should image generation create original pixel sprites for customers, shelves, products, and tilesets, or should MVP start with colored placeholder blocks first?
 5. Should the UI language be English only, Chinese only, or bilingual?
+
+## 11. MVP Implementation Notes
+
+The runnable MVP adds a host-controlled round start to make classroom testing easier:
+
+- The first player in a room is the host.
+- New rooms start in `waiting` status so classmates can join before the timer begins.
+- The host can start the round when ready.
+- When a round starts or restarts, player money, inventory, shelves, prices, revenue, cost, profit, and sales reset to MVP defaults.
+- When the host disconnects, the next player automatically becomes host.
+
+The current MVP remains server-memory only. This keeps the code simple for a high-school project and means rooms disappear if the server restarts.

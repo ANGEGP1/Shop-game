@@ -1,15 +1,22 @@
-const { PRODUCTS, SHELF_LEVELS, STARTING_MONEY } = require('./constants');
+const { PRODUCTS, SHELF_LEVELS, STARTING_MONEY, DEFAULT_PURCHASE_QUANTITY } = require('./constants');
 
 function createProductMap(factory) {
   return Object.fromEntries(Object.keys(PRODUCTS).map((product) => [product, factory(product)]));
 }
 
-function createPlayer(socketId, name, color, storeIndex) {
+function sanitizeName(name, fallback) {
+  const cleaned = String(name || '').trim().replace(/\s+/g, ' ').slice(0, 18);
+  return cleaned || fallback;
+}
+
+function createPlayer(socketId, name, color, storeIndex, isHost = false) {
   return {
     id: socketId,
-    name: name || `Player ${storeIndex + 1}`,
+    name: sanitizeName(name, `Player ${storeIndex + 1}`),
     color,
     storeIndex,
+    isHost,
+    connected: true,
     money: STARTING_MONEY,
     revenue: 0,
     cost: 0,
@@ -23,6 +30,27 @@ function createPlayer(socketId, name, color, storeIndex) {
       level: SHELF_LEVELS[0].level
     }))
   };
+}
+
+function resetPlayerForNewRound(player) {
+  player.money = STARTING_MONEY;
+  player.revenue = 0;
+  player.cost = 0;
+  player.profit = 0;
+  player.unitsSold = 0;
+  player.inventory = createProductMap(() => 0);
+  player.prices = createProductMap((product) => PRODUCTS[product].defaultPrice);
+  player.shelves = createProductMap(() => ({
+    stock: 0,
+    capacity: SHELF_LEVELS[0].capacity,
+    level: SHELF_LEVELS[0].level
+  }));
+}
+
+function parseQuantity(quantity, defaultQuantity = DEFAULT_PURCHASE_QUANTITY) {
+  const parsed = Number.parseInt(quantity, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return defaultQuantity;
+  return Math.max(1, Math.min(50, parsed));
 }
 
 function clampPrice(product, price) {
@@ -47,9 +75,9 @@ function setPrice(player, product, price) {
 
 function buyStock(player, product, quantity) {
   const productInfo = PRODUCTS[product];
-  const amount = Math.max(1, Math.min(50, Number.parseInt(quantity, 10) || 0));
   if (!productInfo) return { ok: false, message: 'Unknown product.' };
 
+  const amount = parseQuantity(quantity);
   const totalCost = productInfo.cost * amount;
   if (player.money < totalCost) {
     return { ok: false, message: `Not enough money to buy ${amount} ${product}.` };
@@ -59,14 +87,14 @@ function buyStock(player, product, quantity) {
   player.cost += totalCost;
   player.inventory[product] += amount;
   recalculateProfit(player);
-  return { ok: true };
+  return { ok: true, amount, totalCost };
 }
 
 function restockShelf(player, product, quantity) {
   const shelf = player.shelves[product];
-  const requested = Math.max(1, Math.min(50, Number.parseInt(quantity, 10) || 0));
   if (!shelf) return { ok: false, message: 'Unknown shelf.' };
 
+  const requested = parseQuantity(quantity);
   const shelfSpace = shelf.capacity - shelf.stock;
   const moved = Math.min(requested, shelfSpace, player.inventory[product]);
   if (moved <= 0) {
@@ -91,16 +119,20 @@ function upgradeShelf(player, product) {
   shelf.level = nextLevel.level;
   shelf.capacity = nextLevel.capacity;
   recalculateProfit(player);
-  return { ok: true };
+  return { ok: true, upgradeCost: nextLevel.upgradeCost, level: shelf.level };
 }
 
 function recordSale(player, product) {
+  const shelf = player.shelves[product];
+  if (!shelf || shelf.stock <= 0) return false;
+
   const price = player.prices[product];
-  player.shelves[product].stock -= 1;
+  shelf.stock -= 1;
   player.money += price;
   player.revenue += price;
   player.unitsSold += 1;
   recalculateProfit(player);
+  return true;
 }
 
 function calculateLeaderboard(players) {
@@ -112,6 +144,7 @@ function calculateLeaderboard(players) {
       id: player.id,
       name: player.name,
       color: player.color,
+      isHost: player.isHost,
       money: player.money,
       revenue: player.revenue,
       cost: player.cost,
@@ -119,11 +152,14 @@ function calculateLeaderboard(players) {
       unitsSold: player.unitsSold,
       marketShare: totalUnitsSold === 0 ? 0 : Math.round((player.unitsSold / totalUnitsSold) * 100)
     }))
-    .sort((a, b) => b.profit - a.profit || b.revenue - a.revenue);
+    .sort((a, b) => b.profit - a.profit || b.revenue - a.revenue || a.name.localeCompare(b.name));
 }
 
 module.exports = {
   createPlayer,
+  resetPlayerForNewRound,
+  sanitizeName,
+  parseQuantity,
   setPrice,
   buyStock,
   restockShelf,

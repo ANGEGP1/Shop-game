@@ -1,4 +1,4 @@
-const { PRODUCTS, MAP_SIZE, STORE_ZONES } = require('./constants');
+const { PRODUCTS, MAP_SIZE, STORE_ZONES, MAX_ACTIVE_CUSTOMERS } = require('./constants');
 const { recordSale } = require('./economy');
 
 function weightedProductChoice() {
@@ -28,12 +28,14 @@ function scoreStore(player, productName, willingnessToPay) {
   if (price > willingnessToPay) return Number.NEGATIVE_INFINITY;
 
   const priceAboveDefault = Math.max(0, price - product.defaultPrice);
+  const priceBelowDefault = Math.max(0, product.defaultPrice - price);
   const pricePenalty = priceAboveDefault * product.elasticity * 10;
+  const discountBonus = priceBelowDefault * product.elasticity * 3;
   const stockBonus = Math.min(shelf.stock, 10) * 0.5;
   const demandValue = product.demandWeight / 10;
   const randomVariation = Math.random() * 2;
 
-  return demandValue - pricePenalty + stockBonus + randomVariation;
+  return demandValue - pricePenalty + discountBonus + stockBonus + randomVariation;
 }
 
 function chooseStore(room, productName, willingnessToPay) {
@@ -52,6 +54,8 @@ function chooseStore(room, productName, willingnessToPay) {
 }
 
 function spawnCustomer(room) {
+  if (room.customers.length >= MAX_ACTIVE_CUSTOMERS) return null;
+
   const desiredProduct = weightedProductChoice();
   const willingnessToPay = customerWillingnessToPay(desiredProduct);
   const targetPlayer = chooseStore(room, desiredProduct, willingnessToPay);
@@ -72,13 +76,14 @@ function spawnCustomer(room) {
   };
 
   room.customers.push(customer);
+  return customer;
 }
 
 function moveToward(customer, x, y, speed) {
   const dx = x - customer.x;
   const dy = y - customer.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
-  if (distance <= speed) {
+  if (distance <= speed || distance === 0) {
     customer.x = x;
     customer.y = y;
     return true;
@@ -100,12 +105,7 @@ function updateCustomer(room, customer) {
       && player.shelves[customer.product].stock > 0
       && player.prices[customer.product] <= customer.willingnessToPay;
 
-    if (canBuy) {
-      recordSale(player, customer.product);
-      customer.state = 'bought';
-    } else {
-      customer.state = 'leaving';
-    }
+    customer.state = canBuy && recordSale(player, customer.product) ? 'bought' : 'leaving';
     customer.targetX = MAP_SIZE.exit.x;
     customer.targetY = MAP_SIZE.exit.y;
     return true;
@@ -123,6 +123,10 @@ function updateCustomers(room) {
 }
 
 module.exports = {
+  weightedProductChoice,
+  customerWillingnessToPay,
+  scoreStore,
+  chooseStore,
   spawnCustomer,
   updateCustomers
 };

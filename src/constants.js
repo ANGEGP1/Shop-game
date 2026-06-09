@@ -1,5 +1,5 @@
 // Shared constants for the SuperMart Battle MVP.
-// Keep numbers here so students can tune the game balance in one place.
+// Keep numbers here so students can tune game balance without hunting through files.
 
 const MAX_PLAYERS = 8;
 const STARTING_MONEY = 100;
@@ -7,34 +7,42 @@ const ROUND_SECONDS = 300;
 const CUSTOMER_SPAWN_MS = 1700;
 const GAME_TICK_MS = 1000;
 const ROOM_CODE_LENGTH = 4;
+const MAX_ACTIVE_CUSTOMERS = 36;
+const DEFAULT_PURCHASE_QUANTITY = 5;
 
 const PRODUCTS = {
   Milk: {
     name: 'Milk',
+    emoji: '🥛',
     cost: 2,
     defaultPrice: 4,
     minPrice: 2,
     maxPrice: 8,
     demandWeight: 35,
-    elasticity: 0.65
+    elasticity: 0.65,
+    lesson: 'Medium elasticity: customers compare price, but many still need it.'
   },
   Bread: {
     name: 'Bread',
+    emoji: '🍞',
     cost: 1,
     defaultPrice: 3,
     minPrice: 1,
     maxPrice: 6,
     demandWeight: 45,
-    elasticity: 0.35
+    elasticity: 0.35,
+    lesson: 'Low elasticity: demand stays strong even when price rises a little.'
   },
   Juice: {
     name: 'Juice',
+    emoji: '🧃',
     cost: 3,
     defaultPrice: 5,
     minPrice: 3,
     maxPrice: 10,
     demandWeight: 20,
-    elasticity: 0.9
+    elasticity: 0.9,
+    lesson: 'High elasticity: customers avoid expensive juice quickly.'
   }
 };
 
@@ -80,6 +88,8 @@ module.exports = {
   CUSTOMER_SPAWN_MS,
   GAME_TICK_MS,
   ROOM_CODE_LENGTH,
+  MAX_ACTIVE_CUSTOMERS,
+  DEFAULT_PURCHASE_QUANTITY,
   PRODUCTS,
   SHELF_LEVELS,
   PLAYER_COLORS,
