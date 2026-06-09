@@ -1,0 +1,22 @@
+{
+  "name": "supermart-battle",
+  "version": "0.1.0",
+  "description": "Multiplayer 2D pixel supermarket management MVP for the browser.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "socket.io",
+    "multiplayer",
+    "browser-game",
+    "economics"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  }
+}
